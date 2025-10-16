@@ -4,8 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from .terrain import generate_reference_and_limits
 
-import csv # For extracting data from the mission.csv file
-import pandas as pd
+import pandas as pd # For extracting data from the .csv data file
 
 class Submarine:
     def __init__(self):
