@@ -4,6 +4,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from .terrain import generate_reference_and_limits
 
+import csv # For extracting data from the mission.csv file
+import pandas as pd
+
 class Submarine:
     def __init__(self):
 
@@ -75,8 +78,46 @@ class Mission:
 
     @classmethod
     def from_csv(cls, file_name: str):
-        # You are required to implement this method
-        pass
+
+        print('notebooks/uuv_mission')
+
+        """
+        # Initialise reference, cave_height and cave_depth arrays
+        reference = []
+        cave_height = []
+        cave_depth = []
+
+        # Open the CSV file and read the data
+        with open(file_name, 'r') as csvfile:
+
+            reader = csv.reader(csvfile)
+
+            # Skip the header row
+            next(reader)
+
+            # For each row add the value for each to each array 
+            for row in reader:
+                reference.append(row[1])
+                cave_height.append(row[2])
+                cave_depth.append(row[3])
+
+            #reference = next(reader)[0]
+            #cave_height = next(reader)[1]
+            #cave_depth = next(reader)[2]
+        
+        """
+
+        df = pd.read_csv(file_name)
+        reference = df['reference']
+        cave_height = df['cave_height']
+        cave_depth = df['cave_depth']
+
+        print(reference)
+        print(cave_height)
+        print(cave_depth)
+
+        # Initialize the object with the data from the CSV file
+        return cls(reference, cave_height, cave_depth)
 
 
 class ClosedLoop:
