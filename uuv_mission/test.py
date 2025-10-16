@@ -1,6 +1,10 @@
 import numpy as np
 
-def controller(Reference, Position):
+def controller():
+
+    Reference = np.array([1,2])
+    Position = np.array([3,4])
+    
     # Reference and Position should be two value arrays where Reference = [r(t-1), r(t)] and Position = [y(t-1), y(t)].
     
     # Defining Controller gain parameters:
