@@ -6,6 +6,8 @@ from .terrain import generate_reference_and_limits
 
 import pandas as pd # For extracting data from the .csv data file
 
+from uuv_mission.control import Controller
+
 class Submarine:
     def __init__(self):
 
@@ -77,52 +79,23 @@ class Mission:
 
     @classmethod
     def from_csv(cls, file_name: str):
-
-        print('notebooks/uuv_mission')
-
-        """
-        # Initialise reference, cave_height and cave_depth arrays
-        reference = []
-        cave_height = []
-        cave_depth = []
-
-        # Open the CSV file and read the data
-        with open(file_name, 'r') as csvfile:
-
-            reader = csv.reader(csvfile)
-
-            # Skip the header row
-            next(reader)
-
-            # For each row add the value for each to each array 
-            for row in reader:
-                reference.append(row[1])
-                cave_height.append(row[2])
-                cave_depth.append(row[3])
-
-            #reference = next(reader)[0]
-            #cave_height = next(reader)[1]
-            #cave_depth = next(reader)[2]
-        
-        """
-
+        # Extract the data from the .csv file using pandas module
         df = pd.read_csv(file_name)
+
+        # Extract data from each column using the headers
         reference = df['reference']
         cave_height = df['cave_height']
         cave_depth = df['cave_depth']
-
-        print(reference)
-        print(cave_height)
-        print(cave_depth)
 
         # Initialize the object with the data from the CSV file
         return cls(reference, cave_height, cave_depth)
 
 
 class ClosedLoop:
-    def __init__(self, plant: Submarine, controller):
+    def __init__(self, plant: Submarine, Controller):
         self.plant = plant
-        self.controller = controller
+        self.controller = Controller
+
 
     def simulate(self,  mission: Mission, disturbances: np.ndarray) -> Trajectory:
 
@@ -131,13 +104,24 @@ class ClosedLoop:
             raise ValueError("Disturbances must be at least as long as mission duration")
         
         positions = np.zeros((T, 2))
+        y_position = np.zeros(T)
         actions = np.zeros(T)
         self.plant.reset_state()
+        reference = np.array(mission.reference)
 
-        for t in range(T):
+        # Starting at t=1 as it doesn't make sense for the system to immediately be able to move on startup - needs acceleration time
+        for t in range(1,T):
             positions[t] = self.plant.get_position()
+            y_position[t] = np.array(self.plant.get_position())[1]
             observation_t = self.plant.get_depth()
-            # Call your controller here
+
+            # Calling the controller function here
+            actions[t] = self.controller.controller(reference,y_position,t)
+            #actions[t] = Controller.controller(reference,y_position,t)
+
+            # sntahoeusnthaoesunthaoeu AARGGGHHHH why does it work if I call it directly
+            # but not when I do other funny things..... AAAARRRRGHHHHHH
+
             self.plant.transition(actions[t], disturbances[t])
 
         return Trajectory(positions)
