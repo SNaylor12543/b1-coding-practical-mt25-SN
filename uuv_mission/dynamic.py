@@ -92,9 +92,9 @@ class Mission:
 
 
 class ClosedLoop:
-    def __init__(self, plant: Submarine, Controller):
-        self.plant = plant
-        self.controller = Controller
+    def __init__(self, Plant: Submarine, Controller):
+        self.Plant = Plant
+        self.Controller = Controller
 
 
     def simulate(self,  mission: Mission, disturbances: np.ndarray) -> Trajectory:
@@ -103,26 +103,21 @@ class ClosedLoop:
         if len(disturbances) < T:
             raise ValueError("Disturbances must be at least as long as mission duration")
         
+        # Initialise arrays
         positions = np.zeros((T, 2))
-        y_position = np.zeros(T)
+        observation = np.zeros(T)
         actions = np.zeros(T)
-        self.plant.reset_state()
-        reference = np.array(mission.reference)
+        self.Plant.reset_state()
+        reference = np.array(mission.reference) # convert reference column to an array
 
-        # Starting at t=1 as it doesn't make sense for the system to immediately be able to move on startup - needs acceleration time
-        for t in range(1,T):
-            positions[t] = self.plant.get_position()
-            y_position[t] = np.array(self.plant.get_position())[1]
-            observation_t = self.plant.get_depth()
+        for t in range(T):
+            positions[t] = self.Plant.get_position()
+            observation[t] = self.Plant.get_depth()
 
             # Calling the controller function here
-            actions[t] = self.controller.controller(reference,y_position,t)
-            #actions[t] = Controller.controller(reference,y_position,t)
+            actions[t] = self.Controller.controller(reference,observation,t)
 
-            # sntahoeusnthaoesunthaoeu AARGGGHHHH why does it work if I call it directly
-            # but not when I do other funny things..... AAAARRRRGHHHHHH
-
-            self.plant.transition(actions[t], disturbances[t])
+            self.Plant.transition(actions[t], disturbances[t])
 
         return Trajectory(positions)
         
