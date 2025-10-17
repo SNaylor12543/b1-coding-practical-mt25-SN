@@ -105,17 +105,17 @@ class ClosedLoop:
         
         # Initialise arrays
         positions = np.zeros((T, 2))
-        observation = np.zeros(T)
+        observations = np.zeros(T)
         actions = np.zeros(T)
         self.Plant.reset_state()
         reference = np.array(mission.reference) # convert reference column to an array
 
         for t in range(T):
             positions[t] = self.Plant.get_position()
-            observation[t] = self.Plant.get_depth()
+            observations[t] = self.Plant.get_depth()
 
             # Calling the controller function here
-            actions[t] = self.Controller.controller(reference,observation,t)
+            actions[t] = self.Controller.controller(reference,observations,t)
 
             self.Plant.transition(actions[t], disturbances[t])
 
